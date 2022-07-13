@@ -54,7 +54,6 @@ func (bot *robot) patchFactoryYaml(repo string, log *logrus.Entry) {
 
 	var p PackageInfo
 	p.Name = repo
-	p.ObsFrom = " "
 	p.ObsTo = "openEuler:Factory"
 	year, month, day := time.Now().Format("2006"), time.Now().Format("01"), time.Now().Format("02")
 	p.Date = fmt.Sprintf("%s-%s-%s", year, month, day)
