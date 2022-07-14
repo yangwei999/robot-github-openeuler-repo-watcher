@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.com/opensourceways/robot-github-repo-watcher/community"
+	"github.com/opensourceways/robot-github-openeuler-repo-watcher/community"
 )
 
 func (bot *robot) handleBranch(

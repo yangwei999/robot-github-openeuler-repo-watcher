@@ -15,7 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
-	"github.com/opensourceways/robot-github-repo-watcher/community"
+	"github.com/opensourceways/robot-github-openeuler-repo-watcher/community"
 )
 
 type watchingFileObject interface {

@@ -7,8 +7,8 @@ import (
 	sdk "github.com/google/go-github/v36/github"
 	"github.com/sirupsen/logrus"
 
-	"github.com/opensourceways/robot-github-repo-watcher/community"
-	"github.com/opensourceways/robot-github-repo-watcher/models"
+	"github.com/opensourceways/robot-github-openeuler-repo-watcher/community"
+	"github.com/opensourceways/robot-github-openeuler-repo-watcher/models"
 )
 
 func (bot *robot) createRepo(

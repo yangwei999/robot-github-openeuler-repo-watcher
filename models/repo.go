@@ -1,6 +1,6 @@
 package models
 
-import "github.com/opensourceways/robot-github-repo-watcher/community"
+import "github.com/opensourceways/robot-github-openeuler-repo-watcher/community"
 
 var empty = struct{}{}
 
