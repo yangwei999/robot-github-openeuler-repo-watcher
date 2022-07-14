@@ -2,7 +2,7 @@ package main
 
 import (
 	gc "github.com/opensourceways/community-robot-lib/githubclient"
-	"github.com/opensourceways/robot-github-repo-watcher/models"
+	"github.com/opensourceways/robot-github-openeuler-repo-watcher/models"
 )
 
 type localState struct {
