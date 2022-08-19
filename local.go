@@ -5,6 +5,10 @@ import (
 	"github.com/opensourceways/robot-github-openeuler-repo-watcher/models"
 )
 
+const (
+	owner = "openeuler-ci-bot"
+)
+
 type localState struct {
 	repos map[string]*models.Repo
 }
@@ -51,6 +55,7 @@ func (bot *robot) loadALLRepos(org string) (*localState, error) {
 				Property: models.RepoProperty{
 					Private: *item.Private,
 				},
+				Owner: *item.Owner.Login,
 			})
 		}
 		for _, i := range members {
@@ -62,6 +67,7 @@ func (bot *robot) loadALLRepos(org string) (*localState, error) {
 			Property: models.RepoProperty{
 				Private: *item.Private,
 			},
+			Owner: *item.Owner.Login,
 		})
 	}
 

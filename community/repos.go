@@ -74,6 +74,7 @@ func (r *Repos) convert() {
 type Repository struct {
 	Name              string       `json:"name" required:"true"`
 	Type              string       `json:"type" required:"true"`
+	PlatForm          string       `json:"plat_form" required:"true"`
 	RenameFrom        string       `json:"rename_from,omitempty"`
 	Description       string       `json:"description,omitempty"`
 	Commentable       bool         `json:"commentable,omitempty"`

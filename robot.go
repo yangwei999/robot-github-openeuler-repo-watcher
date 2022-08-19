@@ -3,6 +3,7 @@ package main
 import (
 	sdk "github.com/google/go-github/v36/github"
 	gc "github.com/opensourceways/community-robot-lib/githubclient"
+	gesdk "github.com/opensourceways/go-gitee/gitee"
 	"sync"
 
 	"github.com/panjf2000/ants/v2"
@@ -28,13 +29,19 @@ type iClient interface {
 	AddRepoMember(pr gc.PRInfo, login, permission string) error
 }
 
-func newRobot(cli iClient, pool *ants.Pool, cfg *botConfig) *robot {
-	return &robot{cli: cli, pool: pool, cfg: cfg}
+type geClient interface {
+	GetDirectoryTree(org, repo, sha string, recursive int32) (gesdk.Tree, error)
+	GetPathContent(org, repo, path, ref string) (gesdk.Content, error)
+}
+
+func newRobot(cli iClient, gecli geClient, pool *ants.Pool, cfg *botConfig) *robot {
+	return &robot{cli: cli, gecli: gecli, pool: pool, cfg: cfg}
 }
 
 type robot struct {
-	pool *ants.Pool
-	cfg  *botConfig
-	cli  iClient
-	wg   sync.WaitGroup
+	pool  *ants.Pool
+	cfg   *botConfig
+	cli   iClient
+	gecli geClient
+	wg    sync.WaitGroup
 }
