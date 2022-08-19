@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/opensourceways/community-robot-lib/config"
+	"github.com/opensourceways/community-robot-lib/giteeclient"
 	"github.com/opensourceways/community-robot-lib/githubclient"
 	"github.com/opensourceways/community-robot-lib/logrusutil"
 	liboptions "github.com/opensourceways/community-robot-lib/options"
@@ -56,13 +57,19 @@ func main() {
 		logrus.WithError(err).Fatal("Error generating client.")
 	}
 
+	//generate a gitee client to make sure that robot can call gitee api
+	ge, err := genGiteeClient("secrets/data/mindspore/robot-gitee/robot-openeuler-token")
+	if err != nil {
+		logrus.WithError(err).Fatal("Error generating gitee client.")
+	}
+
 	pool, err := newPool(cfg.ConcurrentSize, logWapper{})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting goroutine pool.")
 	}
 	defer pool.Release()
 
-	p := newRobot(c, pool, &cfg)
+	p := newRobot(c, ge, pool, &cfg)
 
 	run(p)
 }
@@ -109,6 +116,19 @@ func genClient(tokenPath string) (iClient, error) {
 
 	t := secretAgent.GetTokenGenerator(tokenPath)
 	return githubclient.NewClient(t), nil
+}
+
+func genGiteeClient(tokenPath string) (geClient, error) {
+	secretAgent := new(secret.Agent)
+
+	if err := secretAgent.Start([]string{tokenPath}); err != nil {
+		return nil, err
+	}
+
+	secretAgent.Stop()
+
+	t := secretAgent.GetTokenGenerator(tokenPath)
+	return giteeclient.NewClient(t), nil
 }
 
 func run(bot *robot) {

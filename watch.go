@@ -27,6 +27,7 @@ func (bot *robot) run(ctx context.Context, log *logrus.Entry) error {
 		w:         w.repoBranch,
 		log:       log,
 		cli:       bot.cli,
+		gecli:     bot.gecli,
 		sigOwners: make(map[string]*expectSigOwners),
 		sigInfos:  make(map[string]*expectSigInfos),
 	}
@@ -87,12 +88,17 @@ func (bot *robot) checkOnce(ctx context.Context, org string, local *localState, 
 			copy(cpo, owners)
 		}
 
+		cpa := make([]string, len(admins))
+		if len(admins) > 0 {
+			copy(cpa, admins)
+		}
+
 		err := bot.execTask(
 			local.getOrNewRepo(repo.Name),
 			expectRepoInfo{
 				org:             org,
 				expectOwners:    cpo,
-				expectAdmins:    admins,
+				expectAdmins:    cpa,
 				expectRepoState: repo,
 			},
 			sigLabel,
@@ -118,10 +124,13 @@ func (bot *robot) execTask(localRepo *models.Repo, expectRepo expectRepoInfo, si
 			return bot.createRepo(expectRepo, log, bot.patchFactoryYaml)
 		}
 
+		ms, as := bot.handleMember(expectRepo, before.Members, before.Admins, &before.Owner, log)
+
 		return models.RepoState{
 			Available: true,
 			Branches:  bot.handleBranch(expectRepo, before.Branches, log),
-			Members:   bot.handleMember(expectRepo, before.Members, &before.Owner, log),
+			Members:   ms,
+			Admins:    as,
 			Property:  bot.updateRepo(expectRepo, before.Property, log),
 			Owner:     before.Owner,
 		}

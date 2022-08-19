@@ -15,10 +15,10 @@ type yamlStruct struct {
 }
 
 type PackageInfo struct {
-	Name    string `json:"name,omitempty"`
-	ObsFrom string `json:"obs_from,omitempty"`
-	ObsTo   string `json:"obs_to,omitempty"`
-	Date    string `json:"date,omitempty"`
+	Name     string `json:"name,omitempty"`
+	Obs_From string `json:"obs_from,omitempty"`
+	Obs_To   string `json:"obs_to,omitempty"`
+	Date     string `json:"date,omitempty"`
 }
 
 var m sync.Mutex
@@ -54,7 +54,7 @@ func (bot *robot) patchFactoryYaml(repo string, log *logrus.Entry) {
 
 	var p PackageInfo
 	p.Name = repo
-	p.ObsTo = "openEuler:Factory"
+	p.Obs_To = "openEuler:Factory"
 	year, month, day := time.Now().Format("2006"), time.Now().Format("01"), time.Now().Format("02")
 	p.Date = fmt.Sprintf("%s-%s-%s", year, month, day)
 	y.Packages = append(y.Packages, p)

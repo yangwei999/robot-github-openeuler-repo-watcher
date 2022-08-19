@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	sdk "github.com/google/go-github/v36/github"
+	gesdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
@@ -107,10 +107,11 @@ func (e *expectSigInfos) refresh(f getSHAFunc) *community.SigInfos {
 type expectState struct {
 	log    *logrus.Entry
 	cli    iClient
+	gecli  geClient
 	w      repoBranch
 	sigDir string
 
-	tree      []*sdk.TreeEntry
+	tree      []gesdk.TreeBasic
 	reposInfo *community.Repos
 	repos     map[string]*expectRepos
 	sigOwners map[string]*expectSigOwners
@@ -119,22 +120,23 @@ type expectState struct {
 }
 
 func (e *expectState) init(orgPath, sigFilePath, sigDir string) (string, error) {
-	trees, err := e.cli.GetDirectoryTree(e.w.Org, e.w.Repo, e.w.Branch, true)
-	if err != nil || len(trees) == 0 {
+	// call Gitee API to get Tree
+	trees, err := e.gecli.GetDirectoryTree(e.w.Org, e.w.Repo, e.w.Branch, 1)
+	if err != nil || len(trees.Tree) == 0 {
 		return "", err
 	}
-	e.tree = trees
+	e.tree = trees.Tree
 
 	reposInfo := new(community.Repos)
 	e.repos = make(map[string]*expectRepos)
 	for _, v := range e.tree {
-		patharr := strings.Split(*v.Path, "/")
+		patharr := strings.Split(v.Path, "/")
 		if patharr[0] != "sig" || len(patharr) != 5 || patharr[2] != orgPath {
 			continue
 		}
 
-		exRepo := &expectRepos{e.newWatchingFile(*v.Path)}
-		e.repos[*v.Path] = exRepo
+		exRepo := &expectRepos{e.newWatchingFile(v.Path)}
+		e.repos[v.Path] = exRepo
 		singleRepo := exRepo.refresh(func(string) string {
 			return "init"
 		})
@@ -245,6 +247,10 @@ func (e *expectState) check(
 
 	done := sets.NewString()
 	for repo := range repoSigsInfo {
+		if repoMap[repo].PlatForm == "gitee" || repoMap[repo].PlatForm == "" {
+			continue
+		}
+
 		sigName := repoSigsInfo[repo]
 		if sigName == "sig-recycle" {
 			continue
@@ -324,6 +330,10 @@ func (e *expectState) check(
 			break
 		}
 
+		if repoMap[repo].PlatForm == "gitee" || repoMap[repo].PlatForm == "" {
+			continue
+		}
+
 		if !done.Has(repo) {
 			sigName := repoSigsInfo[repo]
 			if sigName == "sig-recycle" {
@@ -390,17 +400,17 @@ func (e *expectState) newWatchingFile(p string) watchingFile {
 }
 
 func (e *expectState) listAllFilesOfRepo(org string) (map[string]string, map[string]string, map[string]string, error) {
-	trees, err := e.cli.GetDirectoryTree(e.w.Org, e.w.Repo, e.w.Branch, true)
-	if err != nil || len(trees) == 0 {
+	trees, err := e.gecli.GetDirectoryTree(e.w.Org, e.w.Repo, e.w.Branch, 1)
+	if err != nil || len(trees.Tree) == 0 {
 		return nil, nil, nil, err
 	}
 
 	r := make(map[string]string)
 	s := make(map[string]string)
 	q := make(map[string]string)
-	for i := range trees {
-		item := trees[i]
-		patharr := strings.Split(*item.Path, "/")
+	for i := range trees.Tree {
+		item := &trees.Tree[i]
+		patharr := strings.Split(item.Path, "/")
 		if len(patharr) == 0 {
 			continue
 		}
@@ -409,16 +419,16 @@ func (e *expectState) listAllFilesOfRepo(org string) (map[string]string, map[str
 			if len(form) != 2 || form[1] != "" {
 				continue
 			}
-			r[*item.Path] = *item.SHA
+			r[item.Path] = item.Sha
 			continue
 		}
 		if patharr[0] == "sig" && len(patharr) == 3 && patharr[2] == "OWNERS" {
-			s[*item.Path] = *item.SHA
+			s[item.Path] = item.Sha
 			continue
 		}
 
 		if patharr[0] == "sig" && len(patharr) == 3 && patharr[2] == "sig-info.yaml" {
-			q[*item.Path] = *item.SHA
+			q[item.Path] = item.Sha
 			continue
 		}
 	}
@@ -427,12 +437,12 @@ func (e *expectState) listAllFilesOfRepo(org string) (map[string]string, map[str
 }
 
 func (e *expectState) loadFile(f string) (string, string, error) {
-	c, err := e.cli.GetPathContent(e.w.Org, e.w.Repo, f, e.w.Branch)
+	c, err := e.gecli.GetPathContent(e.w.Org, e.w.Repo, f, e.w.Branch)
 	if err != nil {
 		return "", "", err
 	}
 
-	return *c.Content, *c.SHA, nil
+	return c.Content, c.Sha, nil
 }
 
 func decodeYamlFile(content string, v interface{}) error {
