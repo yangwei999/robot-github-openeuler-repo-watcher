@@ -43,6 +43,11 @@ func (bot *robot) run(ctx context.Context, log *logrus.Entry) error {
 		return err
 	}
 
+	err = bot.loadAllPckgMgmtFile()
+	if err != nil {
+		log.Errorf("load all pckg-mgmt.yaml failed, err:%s", err.Error())
+	}
+
 	bot.watch(ctx, org, local, expect)
 	return nil
 }
