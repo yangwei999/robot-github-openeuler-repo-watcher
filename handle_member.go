@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	gc "github.com/opensourceways/community-robot-lib/githubclient"
 	"strings"
+
+	gc "github.com/opensourceways/robot-github-lib/client"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"

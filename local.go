@@ -1,7 +1,8 @@
 package main
 
 import (
-	gc "github.com/opensourceways/community-robot-lib/githubclient"
+	gc "github.com/opensourceways/robot-github-lib/client"
+
 	"github.com/opensourceways/robot-github-openeuler-repo-watcher/models"
 )
 

@@ -9,12 +9,12 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/opensourceways/community-robot-lib/config"
-	"github.com/opensourceways/community-robot-lib/giteeclient"
-	"github.com/opensourceways/community-robot-lib/githubclient"
-	"github.com/opensourceways/community-robot-lib/logrusutil"
-	liboptions "github.com/opensourceways/community-robot-lib/options"
-	"github.com/opensourceways/community-robot-lib/secret"
+	giteeclient "github.com/opensourceways/robot-gitee-lib/client"
+	githubclient "github.com/opensourceways/robot-github-lib/client"
+	"github.com/opensourceways/server-common-lib/config"
+	"github.com/opensourceways/server-common-lib/logrusutil"
+	liboptions "github.com/opensourceways/server-common-lib/options"
+	"github.com/opensourceways/server-common-lib/secret"
 	"github.com/panjf2000/ants/v2"
 	"github.com/sirupsen/logrus"
 )

@@ -1,10 +1,11 @@
 package main
 
 import (
-	sdk "github.com/google/go-github/v36/github"
-	gc "github.com/opensourceways/community-robot-lib/githubclient"
-	gesdk "github.com/opensourceways/go-gitee/gitee"
 	"sync"
+
+	sdk "github.com/google/go-github/v36/github"
+	gesdk "github.com/opensourceways/go-gitee/gitee"
+	gc "github.com/opensourceways/robot-github-lib/client"
 
 	"github.com/panjf2000/ants/v2"
 )
