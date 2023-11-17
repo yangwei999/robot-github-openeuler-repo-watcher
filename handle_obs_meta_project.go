@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	"path"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 )
 
 type yamlStruct struct {
@@ -94,7 +95,7 @@ func (bot *robot) getRefresh(log *logrus.Entry) []PackageInfo {
 				var y yamlStruct
 				f, err := bot.cli.GetPathContent(b.Org, b.Repo, *t.Path, b.Branch)
 				if err != nil {
-					log.Errorf("get file %s failed. error is: %v", t.Path, err)
+					log.Errorf("get file %s failed. error is: %v", *t.Path, err)
 					continue
 				}
 
