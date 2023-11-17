@@ -98,14 +98,20 @@ func (bot *robot) checkOnce(ctx context.Context, org string, local *localState, 
 			copy(cpa, admins)
 		}
 
+		e := expectRepoInfo{
+			org:             org,
+			expectOwners:    cpo,
+			expectAdmins:    cpa,
+			expectRepoState: repo,
+		}
+
+		if !CanProcess(e) {
+			return
+		}
+
 		err := bot.execTask(
 			local.getOrNewRepo(repo.Name),
-			expectRepoInfo{
-				org:             org,
-				expectOwners:    cpo,
-				expectAdmins:    cpa,
-				expectRepoState: repo,
-			},
+			e,
 			sigLabel,
 			log,
 		)
@@ -121,6 +127,23 @@ func (bot *robot) checkOnce(ctx context.Context, org string, local *localState, 
 	expect.log.Info("new check")
 
 	expect.check(org, isStopped, local.clear, f)
+}
+
+// check if the repo should be handle by github robot
+func CanProcess(e expectRepoInfo) bool {
+	// repository_url meas the repo was hosted on other platform, ignore it
+	if e.expectRepoState.RepoUrl != "" {
+		logrus.Infof("repo %s host on other platform will not be proceed", e.expectRepoState.RepoUrl)
+		return false
+	}
+
+	if e.expectRepoState.Platform == "github" {
+		logrus.Infof("github platform means hosted on github, will be proceed")
+		return true
+	}
+
+	logrus.Infof("platform %s should't be proceed on github", e.expectRepoState.Platform)
+	return false
 }
 
 func (bot *robot) execTask(localRepo *models.Repo, expectRepo expectRepoInfo, sigLabel string, log *logrus.Entry) error {
