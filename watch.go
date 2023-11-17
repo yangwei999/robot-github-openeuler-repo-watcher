@@ -133,7 +133,8 @@ func (bot *robot) checkOnce(ctx context.Context, org string, local *localState, 
 // check if the repo should be handle by github robot
 func CanProcess(e expectRepoInfo) bool {
 	// repository_url must contains github.com/<org>/<name>, it can be created
-	if strings.Contains(e.expectRepoState.RepoUrl, "github.com/"+e.org+"/"+e.expectRepoState.Name) {
+	if strings.Contains(e.expectRepoState.RepoUrl, "github.com/"+e.org+"/"+e.expectRepoState.Name) &&
+		e.expectRepoState.Platform == "github" {
 		logrus.Infof("%s/%s with repository_url match github hostname, will process it", e.org, e.expectRepoState.Name)
 		return true
 	}

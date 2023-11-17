@@ -10,7 +10,8 @@ func TestCanProcessWithEmptyUrl(t *testing.T) {
 	expect := expectRepoInfo{
 		org: "src-openeuler",
 		expectRepoState: &community.Repository{
-			Name: "test",
+			Name:     "test",
+			Platform: "github",
 		},
 	}
 
@@ -23,8 +24,9 @@ func TestCanProcessWithGiteeUrl(t *testing.T) {
 	expect := expectRepoInfo{
 		org: "src-openeuler",
 		expectRepoState: &community.Repository{
-			Name:    "test",
-			RepoUrl: "https://gitee.com/src-openeuler/test",
+			Name:     "test",
+			Platform: "github",
+			RepoUrl:  "https://gitee.com/src-openeuler/test",
 		},
 	}
 
@@ -37,8 +39,9 @@ func TestCanProcessWithGithubUrl(t *testing.T) {
 	expect := expectRepoInfo{
 		org: "src-openeuler",
 		expectRepoState: &community.Repository{
-			Name:    "test",
-			RepoUrl: "https://github.com/src-openeuler/test",
+			Name:     "test",
+			Platform: "github",
+			RepoUrl:  "https://github.com/src-openeuler/test",
 		},
 	}
 
@@ -51,8 +54,24 @@ func TestCanProcessWithInvalidString(t *testing.T) {
 	expect := expectRepoInfo{
 		org: "src-openeuler",
 		expectRepoState: &community.Repository{
-			Name:    "test",
-			RepoUrl: "gsdgsdggdfgdfg",
+			Name:     "test",
+			Platform: "github",
+			RepoUrl:  "gsdgsdggdfgdfg",
+		},
+	}
+
+	if CanProcess(expect) {
+		t.Fail()
+	}
+}
+
+func TestCanProcessWithOtherPlatform(t *testing.T) {
+	expect := expectRepoInfo{
+		org: "src-openeuler",
+		expectRepoState: &community.Repository{
+			Name:     "test",
+			Platform: "gitee",
+			RepoUrl:  "https://github.com/src-openeuler/test",
 		},
 	}
 
