@@ -13,6 +13,8 @@ func TestCanProcess(t *testing.T) {
 		{"", "gitee", "false"},
 		{"xxx", "github", "false"},
 		{"xxx", "gitee", "false"},
+		{"xxx", "", "false"},
+		{"", "", "false"},
 	}
 
 	for k, v := range testCase {
