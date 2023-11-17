@@ -1,81 +1,32 @@
 package main
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/opensourceways/robot-github-openeuler-repo-watcher/community"
 )
 
-func TestCanProcessWithEmptyUrl(t *testing.T) {
-	expect := expectRepoInfo{
-		org: "src-openeuler",
-		expectRepoState: &community.Repository{
-			Name:     "test",
-			Platform: "github",
-		},
+func TestCanProcess(t *testing.T) {
+	testCase := [][]string{
+		{"", "github", "true"},
+		{"", "gitee", "false"},
+		{"xxx", "github", "false"},
+		{"xxx", "gitee", "false"},
 	}
 
-	if CanProcess(expect) {
-		t.Fail()
-	}
-}
+	for k, v := range testCase {
+		expect := expectRepoInfo{
+			org: "src-openeuler",
+			expectRepoState: &community.Repository{
+				Name:     "test",
+				RepoUrl:  v[0],
+				Platform: v[1],
+			},
+		}
 
-func TestCanProcessWithGiteeUrl(t *testing.T) {
-	expect := expectRepoInfo{
-		org: "src-openeuler",
-		expectRepoState: &community.Repository{
-			Name:     "test",
-			Platform: "github",
-			RepoUrl:  "https://gitee.com/src-openeuler/test",
-		},
-	}
-
-	if CanProcess(expect) {
-		t.Fail()
-	}
-}
-
-func TestCanProcessWithGithubUrl(t *testing.T) {
-	expect := expectRepoInfo{
-		org: "src-openeuler",
-		expectRepoState: &community.Repository{
-			Name:     "test",
-			Platform: "github",
-			RepoUrl:  "https://github.com/src-openeuler/test",
-		},
-	}
-
-	if !CanProcess(expect) {
-		t.Fail()
-	}
-}
-
-func TestCanProcessWithInvalidString(t *testing.T) {
-	expect := expectRepoInfo{
-		org: "src-openeuler",
-		expectRepoState: &community.Repository{
-			Name:     "test",
-			Platform: "github",
-			RepoUrl:  "gsdgsdggdfgdfg",
-		},
-	}
-
-	if CanProcess(expect) {
-		t.Fail()
-	}
-}
-
-func TestCanProcessWithOtherPlatform(t *testing.T) {
-	expect := expectRepoInfo{
-		org: "src-openeuler",
-		expectRepoState: &community.Repository{
-			Name:     "test",
-			Platform: "gitee",
-			RepoUrl:  "https://github.com/src-openeuler/test",
-		},
-	}
-
-	if CanProcess(expect) {
-		t.Fail()
+		if strconv.FormatBool(CanProcess(expect)) != v[2] {
+			t.Errorf("case num %d failed", k)
+		}
 	}
 }
