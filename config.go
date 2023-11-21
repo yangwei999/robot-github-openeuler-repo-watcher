@@ -90,9 +90,10 @@ type botConfig struct {
 }
 
 type OMApi struct {
-	Endpoint  string `json:"endpoint"`
-	AppId     string `json:"app_id"`
-	AppSecret string `json:"app_secret"`
+	AppId            string `json:"app_id"`
+	AppSecret        string `json:"app_secret"`
+	EndpointGetToken string `json:"endpoint_get_token"`
+	EndpointGetUser  string `json:"endpoint_get_user"`
 }
 
 func (c *botConfig) validate() error {

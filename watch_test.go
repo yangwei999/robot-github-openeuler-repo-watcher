@@ -10,9 +10,10 @@ import (
 var bot = robot{
 	cfg: &botConfig{
 		OMApi: OMApi{
-			Endpoint:  "https://omapi.osinfra.cn",
-			AppId:     "xxxx",
-			AppSecret: "xxxx",
+			AppId:            "xxxx",
+			AppSecret:        "xxxx",
+			EndpointGetToken: "https://omapi.osinfra.cn/oneid/manager/token",
+			EndpointGetUser:  "https://omapi.osinfra.cn/oneid/manager/getuserinfo",
 		},
 	},
 }

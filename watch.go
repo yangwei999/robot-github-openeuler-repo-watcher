@@ -240,8 +240,7 @@ func (bot *robot) getToken() (string, error) {
 		return "", err
 	}
 
-	url := bot.cfg.OMApi.Endpoint + "/oneid/manager/token"
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payload))
+	req, err := http.NewRequest(http.MethodPost, bot.cfg.OMApi.EndpointGetToken, bytes.NewBuffer(payload))
 	if err != nil {
 		return "", err
 	}
@@ -267,7 +266,7 @@ func (bot *robot) getUserInfo(giteeId string) ([]Identities, error) {
 		return nil, err
 	}
 
-	url := fmt.Sprintf("%s%s?giteeLogin=%s", bot.cfg.OMApi.Endpoint, "/oneid/manager/getuserinfo", giteeId)
+	url := fmt.Sprintf("%s?giteeLogin=%s", bot.cfg.OMApi.EndpointGetUser, giteeId)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
