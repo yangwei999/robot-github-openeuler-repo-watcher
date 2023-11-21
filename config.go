@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/huaweicloud/golangsdk"
 	"path"
+
+	"github.com/huaweicloud/golangsdk"
 )
 
 type configuration struct {
@@ -84,6 +85,14 @@ type botConfig struct {
 	EnableCreatingOBSMetaProject bool `json:"enable_creating_obs_meta_project,omitempty"`
 
 	OBSMetaProject obsMetaProject `json:"obs_meta_project"`
+
+	OMApi OMApi `json:"om_api"`
+}
+
+type OMApi struct {
+	Endpoint  string `json:"endpoint"`
+	AppId     string `json:"app_id"`
+	AppSecret string `json:"app_secret"`
 }
 
 func (c *botConfig) validate() error {

@@ -2,11 +2,12 @@ package main
 
 import (
 	gc "github.com/opensourceways/community-robot-lib/githubclient"
+
 	"github.com/opensourceways/robot-github-openeuler-repo-watcher/models"
 )
 
 const (
-	owner = "openeuler-ci-bot"
+	owner = "openEuler-bot"
 )
 
 type localState struct {
