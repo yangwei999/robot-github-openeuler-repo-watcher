@@ -1,9 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"strings"
 	"time"
 
+	"github.com/opensourceways/community-robot-lib/utils"
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/robot-github-openeuler-repo-watcher/community"
@@ -88,20 +95,11 @@ func (bot *robot) checkOnce(ctx context.Context, org string, local *localState, 
 		if repo == nil {
 			return
 		}
-		cpo := make([]string, len(owners))
-		if len(owners) > 0 {
-			copy(cpo, owners)
-		}
-
-		cpa := make([]string, len(admins))
-		if len(admins) > 0 {
-			copy(cpa, admins)
-		}
 
 		e := expectRepoInfo{
 			org:             org,
-			expectOwners:    cpo,
-			expectAdmins:    cpa,
+			expectOwners:    bot.transformGiteeId(owners),
+			expectAdmins:    bot.transformGiteeId(admins),
 			expectRepoState: repo,
 		}
 
@@ -183,4 +181,126 @@ func isCancelled(ctx context.Context) bool {
 	default:
 		return false
 	}
+}
+
+type omTokenReq struct {
+	GrantType string `json:"grant_type"`
+	AppId     string `json:"app_id"`
+	AppSecret string `json:"app_secret"`
+}
+
+type omTokenResp struct {
+	Status int    `json:"status"`
+	Msg    string `json:"msg"`
+	Token  string `json:"token"`
+}
+
+type omUserInfoResp struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+	Data struct {
+		Identities []Identities `json:"identities"`
+	} `json:"data"`
+}
+
+type Identities struct {
+	LoginName string `json:"login_name"`
+	Identity  string `json:"identity"`
+}
+
+func (bot *robot) transformGiteeId(giteeIds []string) []string {
+	var githubId []string
+	for _, id := range giteeIds {
+		userInfo, err := bot.om.GetUserInfo(id)
+		if err != nil {
+			logrus.Errorf("get user info of [%s] when transformGiteeId error: %s", id, err.Error())
+			continue
+		}
+
+		for _, v := range userInfo {
+			if v.Identity == "github" {
+				githubId = append(githubId, v.LoginName)
+				break
+			}
+		}
+	}
+
+	return githubId
+}
+
+type OMService interface {
+	GetToken() (string, error)
+	GetUserInfo(string) ([]Identities, error)
+}
+
+type omService struct {
+	cfg OMApi
+}
+
+func NewOMService(c OMApi) *omService {
+	return &omService{
+		cfg: c,
+	}
+}
+
+func (o *omService) GetToken() (string, error) {
+	request := omTokenReq{
+		GrantType: "token",
+		AppId:     o.cfg.AppId,
+		AppSecret: o.cfg.AppSecret,
+	}
+	payload, err := json.Marshal(request)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, o.cfg.EndpointGetToken, bytes.NewBuffer(payload))
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	v := new(omTokenResp)
+	cli := utils.HttpClient{MaxRetries: 3}
+	if err = cli.ForwardTo(req, v); err != nil {
+		return "", err
+	}
+	if v.Status != 200 {
+		return "", errors.New(v.Msg)
+	}
+
+	return v.Token, nil
+}
+
+func (o *omService) GetUserInfo(giteeId string) ([]Identities, error) {
+	token, err := o.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	url := fmt.Sprintf("%s?giteeLogin=%s", o.cfg.EndpointGetUser, giteeId)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("token", token)
+
+	v := new(omUserInfoResp)
+	cli := utils.HttpClient{MaxRetries: 3}
+	if err = cli.ForwardTo(req, v); err != nil {
+		if strings.Contains(err.Error(), "User doesn't exist") {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	if v.Code != 200 {
+		return nil, errors.New(v.Msg)
+	}
+
+	return v.Data.Identities, nil
 }

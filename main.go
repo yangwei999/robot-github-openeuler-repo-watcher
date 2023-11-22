@@ -69,7 +69,7 @@ func main() {
 	}
 	defer pool.Release()
 
-	p := newRobot(c, ge, pool, &cfg)
+	p := newRobot(c, ge, pool, NewOMService(cfg.OMApi), &cfg)
 
 	run(p)
 }
