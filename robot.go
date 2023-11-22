@@ -1,10 +1,11 @@
 package main
 
 import (
+	"sync"
+
 	sdk "github.com/google/go-github/v36/github"
 	gc "github.com/opensourceways/community-robot-lib/githubclient"
 	gesdk "github.com/opensourceways/go-gitee/gitee"
-	"sync"
 
 	"github.com/panjf2000/ants/v2"
 )
@@ -34,8 +35,8 @@ type geClient interface {
 	GetPathContent(org, repo, path, ref string) (gesdk.Content, error)
 }
 
-func newRobot(cli iClient, gecli geClient, pool *ants.Pool, cfg *botConfig) *robot {
-	return &robot{cli: cli, gecli: gecli, pool: pool, cfg: cfg}
+func newRobot(cli iClient, gecli geClient, pool *ants.Pool, o OMService, cfg *botConfig) *robot {
+	return &robot{cli: cli, gecli: gecli, pool: pool, om: o, cfg: cfg}
 }
 
 type robot struct {
@@ -43,5 +44,6 @@ type robot struct {
 	cfg   *botConfig
 	cli   iClient
 	gecli geClient
+	om    OMService
 	wg    sync.WaitGroup
 }

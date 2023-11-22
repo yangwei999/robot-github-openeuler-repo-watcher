@@ -7,17 +7,6 @@ import (
 	"github.com/opensourceways/robot-github-openeuler-repo-watcher/community"
 )
 
-var bot = robot{
-	cfg: &botConfig{
-		OMApi: OMApi{
-			AppId:            "xxxx",
-			AppSecret:        "xxxx",
-			EndpointGetToken: "https://omapi.osinfra.cn/oneid/manager/token",
-			EndpointGetUser:  "https://omapi.osinfra.cn/oneid/manager/getuserinfo",
-		},
-	},
-}
-
 func TestCanProcess(t *testing.T) {
 	testCase := [][]string{
 		{"", "github", "true"},
@@ -44,28 +33,53 @@ func TestCanProcess(t *testing.T) {
 	}
 }
 
-func TestGetToken(t *testing.T) {
-	_, err := bot.getToken()
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestGetUserInfo(t *testing.T) {
-	testCase := []string{"georgecao", "I-am-a-robot", "xxxxxxx"}
-	for k, v := range testCase {
-		_, err := bot.getUserInfo(v)
-		if err != nil {
-			t.Errorf("case num %d failed:%s", k, err.Error())
-		}
-	}
-}
-
 func TestTransformGiteeId(t *testing.T) {
-	testCase := []string{"georgecao", "I-am-a-robot", "xxxxxxx"}
+	bot := robot{
+		om: new(omServiceTest),
+	}
+
+	testCase := []string{"tom-gitee", "I-am-a-robot", "xxxxxxx"}
 	githubId := bot.transformGiteeId(testCase)
 
-	if len(githubId) != 1 {
+	if len(githubId) != 1 || githubId[0] != "tom-github" {
 		t.Fail()
+	}
+}
+
+type omServiceTest struct {
+}
+
+func (o *omServiceTest) GetToken() (string, error) {
+	return "xxxxxxxxxx", nil
+}
+
+func (o *omServiceTest) GetUserInfo(giteeId string) ([]Identities, error) {
+	_, err := o.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	switch giteeId {
+	case "tom-gitee":
+		return []Identities{
+			{
+				LoginName: "tom-github",
+				Identity:  "github",
+			},
+			{
+				LoginName: "tom-gitee",
+				Identity:  "gitee",
+			},
+		}, nil
+	case "I-am-a-robot":
+		return []Identities{
+			{
+				LoginName: "I-am-a-robot",
+				Identity:  "gitee",
+			},
+		}, nil
+
+	default:
+		return nil, nil
 	}
 }

@@ -206,13 +206,12 @@ type omUserInfoResp struct {
 type Identities struct {
 	LoginName string `json:"login_name"`
 	Identity  string `json:"identity"`
-	Username  string `json:"user_name"`
 }
 
 func (bot *robot) transformGiteeId(giteeIds []string) []string {
 	var githubId []string
 	for _, id := range giteeIds {
-		userInfo, err := bot.getUserInfo(id)
+		userInfo, err := bot.om.GetUserInfo(id)
 		if err != nil {
 			logrus.Errorf("get user info of [%s] when transformGiteeId error: %s", id, err.Error())
 			continue
@@ -229,18 +228,33 @@ func (bot *robot) transformGiteeId(giteeIds []string) []string {
 	return githubId
 }
 
-func (bot *robot) getToken() (string, error) {
+type OMService interface {
+	GetToken() (string, error)
+	GetUserInfo(string) ([]Identities, error)
+}
+
+type omService struct {
+	cfg OMApi
+}
+
+func NewOMService(c OMApi) *omService {
+	return &omService{
+		cfg: c,
+	}
+}
+
+func (o *omService) GetToken() (string, error) {
 	request := omTokenReq{
 		GrantType: "token",
-		AppId:     bot.cfg.OMApi.AppId,
-		AppSecret: bot.cfg.OMApi.AppSecret,
+		AppId:     o.cfg.AppId,
+		AppSecret: o.cfg.AppSecret,
 	}
 	payload, err := json.Marshal(request)
 	if err != nil {
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, bot.cfg.OMApi.EndpointGetToken, bytes.NewBuffer(payload))
+	req, err := http.NewRequest(http.MethodPost, o.cfg.EndpointGetToken, bytes.NewBuffer(payload))
 	if err != nil {
 		return "", err
 	}
@@ -260,13 +274,13 @@ func (bot *robot) getToken() (string, error) {
 	return v.Token, nil
 }
 
-func (bot *robot) getUserInfo(giteeId string) ([]Identities, error) {
-	token, err := bot.getToken()
+func (o *omService) GetUserInfo(giteeId string) ([]Identities, error) {
+	token, err := o.GetToken()
 	if err != nil {
 		return nil, err
 	}
 
-	url := fmt.Sprintf("%s?giteeLogin=%s", bot.cfg.OMApi.EndpointGetUser, giteeId)
+	url := fmt.Sprintf("%s?giteeLogin=%s", o.cfg.EndpointGetUser, giteeId)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
