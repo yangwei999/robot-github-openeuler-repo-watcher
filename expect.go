@@ -257,10 +257,6 @@ func (e *expectState) check(
 
 	done := sets.NewString()
 	for repo := range repoSigsInfo {
-		if repoMap[repo].PlatForm == "gitee" || repoMap[repo].PlatForm == "" {
-			continue
-		}
-
 		sigName := repoSigsInfo[repo]
 		if sigName == "sig-recycle" {
 			continue
@@ -338,10 +334,6 @@ func (e *expectState) check(
 	for repo := range repoSigsInfo {
 		if isStopped() {
 			break
-		}
-
-		if repoMap[repo].PlatForm == "gitee" || repoMap[repo].PlatForm == "" {
-			continue
 		}
 
 		if !done.Has(repo) {
