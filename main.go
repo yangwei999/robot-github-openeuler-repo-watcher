@@ -21,6 +21,7 @@ import (
 
 type options struct {
 	github     liboptions.GithubOptions
+	gitee      liboptions.GiteeOptions
 	configFile string
 }
 
@@ -32,6 +33,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 
 	o.github.AddFlags(fs)
+	o.gitee.AddFlags(fs)
 
 	fs.StringVar(&o.configFile, "config-file", "", "Path to config file.")
 
@@ -58,7 +60,7 @@ func main() {
 	}
 
 	//generate a gitee client to make sure that robot can call gitee api
-	ge, err := genGiteeClient("secrets/data/mindspore/robot-gitee/robot-openeuler-token")
+	ge, err := genGiteeClient(o.gitee.TokenPath)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error generating gitee client.")
 	}
